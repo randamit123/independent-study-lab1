@@ -4,10 +4,16 @@
 long last_command = 0; // To keep track of when we last commanded the motors
 C610Bus<CAN2> bus;     // Initialize the Teensy's CAN bus to talk to the motors
 
-const int LOOP_DELAY_MILLIS = 5; // Wait for 0.005s between motor updates.
+const float LOOP_DELAY_MILLIS = 0.1; // Wait for 0.005s between motor updates.
 
 const float m1_offset = 0.0;
 const float m2_offset = 0.0;
+
+/*
+Complete the pd_control function in src/main.cpp. Your function should return a current command (100mA, 200mA etc) using the PD control law tau = Kp * (target - theta) + Kd * (-omega).
+
+Use Kp = 1000.0 and Kd = 0.0 to start. Don’t forget the negative signs!
+*/
 
 // Step 5. Implement your own PD controller here.
 float pd_control(float pos,
@@ -16,7 +22,9 @@ float pd_control(float pos,
                  float Kp,
                  float Kd)
 {
-  return 0.0; // YOUR CODE HERE
+  float tau = Kp * (target - pos) + Kd * (-vel);
+
+  return tau; // YOUR CODE HERE
 }
 
 void sanitize_current_command(float &command,
@@ -98,22 +106,24 @@ void loop()
     float m1_current = 0.0;
     float m2_current = 0.0;
 
-
     // Step 8. Change the target position to something periodic
-    // float time = millis() / 1000.0; // millis() returns the time in milliseconds since start of program
+    float time = millis() / 1000.0; // millis() returns the time in milliseconds since start of program
 
     // Step 5. Your PD controller is run here.
     float Kp = 1000.0;
-    float Kd = 0;
-    float target_position = 0.0; // modify in step 8
+    float Kd = 100;
+    float target_position = sin(time); // modify in step 8
     m0_current = pd_control(m0_pos, m0_vel, target_position, Kp, Kd);
 
     // Step 4. Uncomment for bang-bang control. Comment out again before Step 5.
-    // if(m0_pos < 0) {
-    //   m0_current = 800;
-    // } else {
-    //   m0_current = -800;
-    // }
+    /* if (m0_pos < 0)
+    {
+      m0_current = 800;
+    }
+    else
+    {
+      m0_current = -800;
+    } */
 
     // Step 10. Program periodic motion for all three motors.
 
